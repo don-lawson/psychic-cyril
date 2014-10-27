@@ -1,4 +1,4 @@
 psychic-cyril
 =============
 
-first repo commit
+second repo commit. i am a thinking humanoid entity.
