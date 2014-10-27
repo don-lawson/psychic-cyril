@@ -1,4 +1,10 @@
+<<<<<<< HEAD
 Don tries to hijack Paul.txt. And succeeds.
 
 Paul reclaims Paul.txt because he is majestic, like a lion.
 
+=======
+ Kyle tries to hijack Paul.txt. And succeeds.
+
+You sonuvabitch -DL
+>>>>>>> origin/master
