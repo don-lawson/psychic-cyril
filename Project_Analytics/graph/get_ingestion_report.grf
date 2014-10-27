@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="don" created="Thu Oct 16 14:04:04 PDT 2014" guiVersion="3.5.2" id="1413494643051" licenseType="Evaluation" modified="Fri Oct 17 16:16:02 PDT 2014" modifiedBy="don" name="get_ingestion_report.grf" revision="1.31" showComponentDetails="true">
+<Global>
+<Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="org_ingestion_report" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" recordSize="-1" type="delimited">
+<Field eofAsDelimiter="false" format="yyyy-MM-dd" name="report_date" nullable="true" shift="0" size="13" type="date"/>
+<Field eofAsDelimiter="false" name="organization_key" nullable="true" shift="0" size="19" type="long"/>
+<Field eofAsDelimiter="false" name="organization_name" nullable="true" shift="0" size="2147483647" type="string"/>
+<Field eofAsDelimiter="false" name="profile_count" nullable="true" shift="0" size="19" type="long"/>
+<Field eofAsDelimiter="false" name="project_count" nullable="true" shift="0" size="19" type="long"/>
+<Field eofAsDelimiter="false" name="company_types" nullable="true" shift="0" size="2147483647" type="string"/>
+<Field eofAsDelimiter="false" name="null_pro_dsc_count" nullable="true" shift="0" size="19" type="long"/>
+<Field eofAsDelimiter="false" name="most_dsc_count" nullable="true" shift="0" size="19" type="long"/>
+<Field eofAsDelimiter="false" name="most_dsc" nullable="true" shift="0" size="2147483647" type="string"/>
+<Field eofAsDelimiter="false" format="yyyy-MM-dd HH:mm:ss" name="most_recent_mod_dtm" nullable="true" shift="0" size="35" type="date"/>
+<Field eofAsDelimiter="false" name="distinct_phone_nbrs" nullable="true" shift="0" size="19" type="long"/>
+<Field eofAsDelimiter="false" name="headshot_count" nullable="true" shift="0" size="19" type="long"/>
+<Field eofAsDelimiter="false" name="banner_count" nullable="true" shift="0" size="19" type="long"/>
+<Field eofAsDelimiter="false" name="distinct_headshots" nullable="true" shift="0" size="19" type="long"/>
+<Field eofAsDelimiter="false" name="distinct_banners" nullable="true" shift="0" size="19" type="long"/>
+<Field eofAsDelimiter="false" name="verified_count" nullable="true" shift="0" size="19" type="long"/>
+<Field eofAsDelimiter="false" name="unclaimable_count" nullable="true" shift="0" size="19" type="long"/>
+<Field eofAsDelimiter="false" name="avg_project_cost" nullable="true" shift="0" size="2147483647" type="string"/>
+<Field eofAsDelimiter="false" name="project_image_count" nullable="true" shift="0" size="19" type="long"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata1">
+<Record fieldDelimiter="|" name="organization_nm" recordDelimiter="\n" type="delimited">
+<Field name="organization_nm" type="string"/>
+</Record>
+</Metadata>
+<Connection database="POSTGRE" dbURL="jdbc:postgresql://dbcore.qa.porch.com:5435/application_data" id="JDBC0" jdbcSpecific="POSTGRE" name="core_qa_conn" password="Catch-22" type="JDBC" user="donl"/>
+<Connection database="POSTGRE" dbURL="jdbc:postgresql://localhost:5432/projects" id="JDBC2" jdbcSpecific="POSTGRE" name="localhost" password="catch-22" type="JDBC" user="postgres"/>
+<Connection database="POSTGRE" dbURL="jdbc:postgresql://dbcore00.prod.porch.com/application_data" id="JDBC3" jdbcSpecific="POSTGRE" name="prod_core" password="catch-22" type="JDBC" user="donl"/>
+<Connection database="POSTGRE" dbURL="jdbc:postgresql://dbcore00.prod.porch.com:5435/application_data" id="JDBC1" jdbcSpecific="POSTGRE" name="prod_core" password="catch-22" type="JDBC" user="donl"/>
+<Connection database="POSTGRE" dbURL="jdbc:postgresql://dbcore00.prod.porch.com/application_data" id="JDBC4" jdbcSpecific="POSTGRE" name="prod_core" password="catch-22" type="JDBC" user="donl"/>
+<Connection database="POSTGRE" dbURL="jdbc:postgresql://dbcore00.prod.porch.com:5435/application_data" id="JDBC5" jdbcSpecific="POSTGRE" name="prod_core" password="catch-22" type="JDBC" user="donl"/>
+<GraphParameters>
+<GraphParameter name="ORG_REPORT_NM" value="Merry Maids"/>
+<GraphParameterFile fileURL="workspace.prm"/>
+</GraphParameters>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node dbConnection="JDBC1" enabled="enabled" guiName="fetch_organization_nms" guiX="52" guiY="97" id="FETCH_ORGANIZATION_NMS" type="DB_INPUT_TABLE">
+<attr name="sqlQuery"><![CDATA[select organization_nm 
+from core.organization]]></attr>
+</Node>
+<Node dbConnection="JDBC2" dbTable="org_ingestion_report" enabled="enabled" guiName="persist_to_local" guiX="643" guiY="97" id="PERSIST_TO_LOCAL" type="DB_OUTPUT_TABLE">
+<attr name="sqlQuery"><![CDATA[INSERT INTO analytics_dash.org_ingestion_report (report_date, organization_key, organization_name, profile_count, project_count, company_types, null_pro_dsc_count, most_dsc_count, most_dsc, most_recent_mod_dtm, distinct_phone_nbrs, headshot_count, banner_count, distinct_headshots, distinct_banners, verified_count, unclaimable_count, avg_project_cost, project_image_count)
+VALUES ($report_date, $organization_key, $organization_name, $profile_count, $project_count, $company_types, $null_pro_dsc_count, $most_dsc_count, $most_dsc, $most_recent_mod_dtm, $distinct_phone_nbrs, $headshot_count, $banner_count, $distinct_headshots, $distinct_banners, $verified_count, $unclaimable_count, ($avg_project_cost)::money, $project_image_count)]]></attr>
+</Node>
+<Node dbConnection="JDBC5" enabled="enabled" guiName="run_ingestion_function" guiX="356" guiY="26" id="RUN_INGESTION_FUNCTION" joinKey="organization_nm" metadata="Metadata0" type="DBJOIN">
+<attr name="transform"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$out.0.* = $in.1.*;
+	//string x = replace(toString($in.1.avg_project_cost),",","");
+	//$out.0.avg_project_cost = str2decimal(x); 
+	return 0;
+}
+]]></attr>
+<attr name="sqlQuery"><![CDATA[select *
+from db_admin.org_ingestion_report(?)]]></attr>
+</Node>
+<Edge debugMode="true" fromNode="FETCH_ORGANIZATION_NMS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge5" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="RUN_INGESTION_FUNCTION:0"/>
+<Edge debugMode="true" fromNode="RUN_INGESTION_FUNCTION:0" guiBendpoints="" guiRouter="Manhattan" id="Edge4" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (joined records)" toNode="PERSIST_TO_LOCAL:0"/>
+</Phase>
+</Graph>
