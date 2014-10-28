@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="don" created="Mon Oct 27 17:44:14 PDT 2014" guiVersion="4.0.0.M2" id="1414457115925" licenseType="Evaluation" modified="Mon Oct 27 17:45:29 PDT 2014" modifiedBy="don" name="pro_engagement_report_sub" nature="subgraph" revision="1.1" showComponentDetails="true">
+<Global>
+<Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="organization_nm" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" recordSize="-1" type="delimited">
+<Field eofAsDelimiter="false" name="organization_nm" nullable="true" shift="0" size="2147483647" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="pro_engagement_report" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" recordSize="-1" type="delimited">
+<Field name="Report_Date" type="date"/>
+<Field name="Organization_Name" type="string"/>
+<Field eofAsDelimiter="false" label="Company Key" name="Company_Key" nullable="true" shift="0" size="19" type="long"/>
+<Field eofAsDelimiter="false" label="Company Name" name="Company_Name" nullable="true" shift="0" size="100" type="string"/>
+<Field eofAsDelimiter="false" label="Address 1" name="Address_1" nullable="true" shift="0" size="100" type="string"/>
+<Field eofAsDelimiter="false" label="City" name="City" nullable="true" shift="0" size="80" type="string"/>
+<Field eofAsDelimiter="false" label="State" name="State" nullable="true" shift="0" size="20" type="string"/>
+<Field eofAsDelimiter="false" label="Zip" name="Zip" nullable="true" shift="0" size="16" type="string"/>
+<Field eofAsDelimiter="false" label="Company Website" name="Company_Website" nullable="true" shift="0" size="250" type="string"/>
+<Field eofAsDelimiter="false" label="Contact Email" name="Contact_Email" nullable="true" shift="0" size="250" type="string"/>
+<Field eofAsDelimiter="false" label="Contact Phone" name="Contact_Phone" nullable="true" shift="0" size="19" type="long"/>
+<Field eofAsDelimiter="false" label="Company Type" name="Company_Type" nullable="true" shift="0" size="100" type="string"/>
+<Field eofAsDelimiter="false" format="yyyy-MM-dd" label="Date of Profile Creation" name="Date_of_Profile_Creation" nullable="true" shift="0" size="13" type="date"/>
+<Field eofAsDelimiter="false" format="yyyy-MM-dd" label="Date Last Modified" name="Date_Last_Modified" nullable="true" shift="0" size="13" type="date"/>
+<Field eofAsDelimiter="false" label="Porch URL" name="Porch_URL" nullable="true" shift="0" size="2147483647" type="string"/>
+</Record>
+</Metadata>
+<Connection database="POSTGRE" dbURL="jdbc:postgresql://dbcore00.prod.porch.com:5435/application_data" id="JDBC0" jdbcSpecific="POSTGRE" name="prod_core" password="catch-22" type="JDBC" user="donl"/>
+<GraphParameters>
+<GraphParameterFile fileURL="workspace.prm"/>
+</GraphParameters>
+<Dictionary/>
+</Global>
+<Phase number="1">
+<Node dbConnection="JDBC0" enabled="enabled" guiName="get_associations" guiX="214" guiY="231" id="GET_ASSOCIATIONS" type="DB_INPUT_TABLE">
+<attr name="sqlQuery"><![CDATA[select distinct organization_nm
+from core.organization
+order by organization_nm]]></attr>
+</Node>
+<Node dbConnection="JDBC0" enabled="enabled" guiName="run_report_for_all_orgs" guiX="419" guiY="59" id="RUN_REPORT_FOR_ALL_ORGS" joinKey="organization_nm" type="DBJOIN">
+<attr name="sqlQuery"><![CDATA[select 	now()::date as "Report Date",
+	org.organization_nm as "Partner Name",
+	cco.company_key as "Company Key", 
+	cco.company_nm as "Company Name",
+	adr.street_line_1_adr as "Address 1",
+	adr.city_nm as "City",
+	adr.province_cd as "State",
+	adr.postal_cd as "Zip",
+	cco.company_web_site_url as "Company Website",
+	cco.company_contact_email_adr as "Contact Email",
+	cco.company_phone_nbr as "Contact Phone",
+	cct.company_type_nm as "Company Type",
+	cco.created_dtm::date as "Date Last Modified",
+	cco.modified_dtm::date as "Date of Profile Creation",
+	'http://porch.com/pros/' || cco.seo_url as "Porch URL"
+	from core.organization org
+		join core.company_linkto_organization clo using (organization_key)
+		join core.company cco using (company_key)
+		join core.company_type cct using (company_type_key)
+		join core.address adr on
+			adr.address_key = cco.address_key
+	where org.organization_nm = ?
+		and (cco.account_status_cd = 'USER_ACCOUNT' or cco.account_status_cd = 'VERIFIED_ACCOUNT')
+	order by cco.company_nm]]></attr>
+</Node>
+<Node enabled="enabled" guiName="SubgraphInput" guiX="50" guiY="10" id="SUBGRAPH_INPUT" type="SUBGRAPH_INPUT">
+<Port guiY="110" name="0"/>
+</Node>
+<Edge debugMode="true" fromNode="GET_ASSOCIATIONS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="RUN_REPORT_FOR_ALL_ORGS:0"/>
+<Edge debugMode="true" fromNode="RUN_REPORT_FOR_ALL_ORGS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (joined records)" toNode="WRITE_REPORT:0"/>
+</Phase>
+<Phase number="2">
+<Node enabled="enabled" guiName="SubgraphOutput" guiX="881" guiY="10" id="SUBGRAPH_OUTPUT" type="SUBGRAPH_OUTPUT">
+<Port guiY="110" name="0"/>
+</Node>
+<Node enabled="enabled" fileURL="./data-out/${TODAY}_Pro_Engagement_Report.xlsx" formatter="XLSX" guiName="write_report" guiX="653" guiY="106" id="WRITE_REPORT" namesRow="1" removeSheets="true" sheetNumber="1" type="XLS_WRITER"/>
+</Phase>
+</Graph>
