@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="don" created="Thu Oct 16 14:34:49 PDT 2014" guiVersion="3.5.2" id="1413588874945" licenseType="Evaluation" modified="Wed Oct 22 16:04:28 PDT 2014" modifiedBy="don" name="pro_engagement_report" revision="1.65" showComponentDetails="true">
+<Graph author="don" created="Thu Oct 16 14:34:49 PDT 2014" guiVersion="4.0.0.M2" id="1413588874945" licenseType="Evaluation" modified="Mon Oct 27 17:46:10 PDT 2014" modifiedBy="don" name="pro_engagement_report" revision="1.67" showComponentDetails="true">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="organization_nm" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" recordSize="-1" type="delimited">
@@ -33,51 +33,16 @@
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" guiName="remove_xlsx_to_write" guiX="83" guiY="124" id="REMOVE_XLSX_TO_WRITE" type="SYS_EXECUTE">
+<Node enabled="enabled" guiName="remove_xlsx_to_write" guiX="106" guiY="249" id="REMOVE_XLSX_TO_WRITE" type="SYS_EXECUTE">
 <attr name="command"><![CDATA[rm ./data-out/*_Pro_Engagement_Report.xlsx]]></attr>
 </Node>
 </Phase>
 <Phase number="1">
-<Node dbConnection="JDBC0" enabled="enabled" guiName="get_associations" guiX="102" guiY="249" id="GET_ASSOCIATIONS" type="DB_INPUT_TABLE">
-<attr name="sqlQuery"><![CDATA[select distinct organization_nm
-from core.organization
-order by organization_nm]]></attr>
-</Node>
-<Node dbConnection="JDBC0" enabled="enabled" guiName="run_report_for_all_orgs" guiX="307" guiY="77" id="RUN_REPORT_FOR_ALL_ORGS" joinKey="organization_nm" type="DBJOIN">
-<attr name="sqlQuery"><![CDATA[select 	now()::date as "Report Date",
-	org.organization_nm as "Partner Name",
-	cco.company_key as "Company Key", 
-	cco.company_nm as "Company Name",
-	adr.street_line_1_adr as "Address 1",
-	adr.city_nm as "City",
-	adr.province_cd as "State",
-	adr.postal_cd as "Zip",
-	cco.company_web_site_url as "Company Website",
-	cco.company_contact_email_adr as "Contact Email",
-	cco.company_phone_nbr as "Contact Phone",
-	cct.company_type_nm as "Company Type",
-	cco.created_dtm::date as "Date Last Modified",
-	cco.modified_dtm::date as "Date of Profile Creation",
-	'http://porch.com/pros/' || cco.seo_url as "Porch URL"
-	from core.organization org
-		join core.company_linkto_organization clo using (organization_key)
-		join core.company cco using (company_key)
-		join core.company_type cct using (company_type_key)
-		join core.address adr on
-			adr.address_key = cco.address_key
-	where org.organization_nm = ?
-		and (cco.account_status_cd = 'USER_ACCOUNT' or cco.account_status_cd = 'VERIFIED_ACCOUNT')
-	order by cco.company_nm]]></attr>
-</Node>
-<Edge debugMode="true" fromNode="GET_ASSOCIATIONS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="RUN_REPORT_FOR_ALL_ORGS:0"/>
-<Edge debugMode="true" fromNode="RUN_REPORT_FOR_ALL_ORGS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (joined records)" toNode="WRITE_REPORT:0"/>
-</Phase>
-<Phase number="2">
-<Node enabled="enabled" fileURL="./data-out/${TODAY}_Pro_Engagement_Report.xlsx" formatter="XLSX" guiName="write_report" guiX="541" guiY="124" id="WRITE_REPORT" namesRow="1" removeSheets="true" sheetNumber="1" type="XLS_WRITER"/>
+<Node enabled="enabled" guiName="pro_engagement_report_sub" guiX="303" guiY="112" id="PRO_ENGAGEMENT_REPORT_SUB" jobURL="${GRAPH_DIR}/pro_engagement_report_sub.sgrf" type="SUBGRAPH"/>
 </Phase>
 <Phase number="3">
 <Node enabled="enabled" fileURL="./data-out/${TODAY}_Pro_Engagement_Report.xlsx" guiName="read_report_records" guiX="324" guiY="237" id="READ_REPORT_RECORDS" numRecords="1" type="SPREADSHEET_READER"/>
-<Node attachments="./data-out/${TODAY}_Pro_Engagement_Report.xlsx" enabled="enabled" guiName="send_report" guiX="541" guiY="237" id="SEND_REPORT" message="To=donl@porch.com&#10;From=donl@porch.com&#10;Subject=Pro Engagement Report - ${TODAY}&#10;MessageBody=Pro engagement for the week.&#10;" smtpPassword="Catch-22" smtpPort="587" smtpServer="smtp.office365.com" smtpTLS="true" smtpUser="donl@porch.com" type="EMAIL_SENDER"/>
+<Node attachments="./data-out/${TODAY}_Pro_Engagement_Report.xlsx" enabled="enabled" guiName="send_report" guiX="542" guiY="237" id="SEND_REPORT" message="To=donl@porch.com&#10;From=donl@porch.com&#10;Subject=Pro Engagement Report - ${TODAY}&#10;MessageBody=Pro engagement for the week.&#10;" smtpPassword="Catch-22" smtpPort="587" smtpServer="smtp.office365.com" smtpTLS="true" smtpUser="donl@porch.com" type="EMAIL_SENDER"/>
 <Edge debugMode="true" fromNode="READ_REPORT_RECORDS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge5" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (output)" toNode="SEND_REPORT:0"/>
 </Phase>
 </Graph>
