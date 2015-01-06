@@ -1,7 +1,0 @@
-user=postgres
-jdbcSpecific=POSTGRE
-password=catch-22
-name=PSQL
-database=POSTGRE
-dbURL=jdbc\:postgresql\://localhost\:5432/
-jndiName=
